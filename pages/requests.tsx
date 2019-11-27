@@ -1,11 +1,11 @@
 import { RequestsResponse } from "./api/requests";
 import Layout from "../components/Layout";
 import Link from "next/link";
-import { Request } from "./api/requests/types";
 import fetchJSON from "../common/fetch";
+import { Request } from "../db/entities/Request";
 
 interface RequestsProps {
-  requests: Array<Request>
+  requests: Request[]
 }
 
 const Requests = (props: RequestsProps) => (
@@ -15,7 +15,7 @@ const Requests = (props: RequestsProps) => (
       {props.requests.map(req => (
         <li key={req.id}>
           <Link href="/requests/[id]" as={`/requests/${req.id}`}>
-            <a>({req.date}) {req.id} - {req.user.name}</a>
+            <a>({req.start_window} - {req.end_window}) {req.id} - {req.owner.display_name}</a>
           </Link>
         </li>
       ))}

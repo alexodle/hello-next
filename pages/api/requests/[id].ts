@@ -1,14 +1,22 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { Request } from "./types"
+import { getRepository } from "../../../db/connection"
+import { Request } from "../../../db/entities/Request"
 
 export interface RequestResponse {
   request: Request
 }
 
-export default (req: NextApiRequest, res: NextApiResponse) => {
+export default async (req: NextApiRequest, res: NextApiResponse) => {
   const { query: { id } } = req
-  const response: RequestResponse = {
-    request: {id: (id as string), user:{name:"Alex"}, date:new Date(), meta:{}}
+  try {
+    const request = await (await getRepository(Request)).findOne(id as string, { relations: ["owner"] })
+    if (!request) {
+      res.status(404).json({})
+    } else {
+      const response: RequestResponse = { request }
+      res.status(200).json(response)
+    }
+  } catch (e) {
+    res.status(500).json({err: e })
   }
-  setTimeout((() => res.status(200).json(response)), 2000)
 }

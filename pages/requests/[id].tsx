@@ -1,8 +1,8 @@
-import { Request } from '../api/requests/types'
 import { NextPageContext } from 'next'
 import { RequestResponse } from '../api/requests/[id]'
 import Layout from '../../components/Layout'
 import fetchJSON from '../../common/fetch'
+import { Request } from '../../db/entities/Request'
 
 export interface RequestProps {
   request: Request
