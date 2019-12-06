@@ -1,10 +1,9 @@
 import {createConnection, Connection, Repository, ObjectType, EntitySchema, getConnection as typeOrmGetConnection} from "typeorm";
-import { User } from "./entities/User";
-import { Request } from "./entities/Request";
+import * as models from "./entities";
 
 async function create(): Promise<Connection> {
   try {
-    const entities = [ User, Request ]
+    const entities = Object.values(models)
     return await createConnection({
       type: 'postgres',
       host: process.env.POSTGRES_HOST,

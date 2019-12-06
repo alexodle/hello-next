@@ -9,7 +9,13 @@ export interface RequestResponse {
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const { query: { id } } = req
   try {
-    const request = await (await getRepository(Request)).findOne(id as string, { relations: ["owner"] })
+    const request = await (await getRepository(Request)).findOne(id as string, { relations: [
+      "owner",
+      "price_range",
+      "neighborhood",
+      "contacts",
+      // Hiding "itinerary_items" for now
+    ]})
     if (!request) {
       res.status(404).json({})
     } else {

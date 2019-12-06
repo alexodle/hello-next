@@ -1,44 +1,71 @@
 import { getRepository } from './connection';
 import { User } from './entities/User'
 import { Request } from './entities/Request'
+import { Neighborhood } from './entities/Neighborhood';
+import { PriceRange } from './entities/PriceRange';
+import { Contact } from './entities/Contact';
 
-function createUser(username: string): User {
-  const user = new User()
-  user.username = username
-  user.display_name = username;
-  user.password_hash = 'abcdefg'
+async function getUser(username: string): Promise<User> {
+  const repo = await getRepository(User)
+  let user = await repo.findOne({username})
+  if (!user) {
+    user = new User()
+    user.username = username
+    user.display_name = username;
+    user.password_hash = 'abcdefg'
+    user = await repo.save(user)
+  }
   return user
 }
 
-async function createRequest(username: string): Promise<Request> {
-  const userRepo = await getRepository(User)
-  const user = await userRepo.findOne({where: { username }})
-  if (!user) throw new Error("user not found: " + username)
+async function getPriceRange(name: string): Promise<PriceRange> {
+  const repo = await getRepository(PriceRange)
+  let pr = await repo.findOne({name})
+  if (!pr) {
+    pr = new PriceRange()
+    pr.name = name
+    pr = await repo.save(pr)
+  }
+  return pr
+}
+
+async function getNeighb(name: string): Promise<Neighborhood> {
+  const repo = await getRepository(Neighborhood)
+  let neighb = await repo.findOne({name})
+  if (!neighb) {
+    neighb = new Neighborhood()
+    neighb.name = name
+    neighb = await repo.save(neighb)
+  }
+  return neighb
+}
+
+function createContact(phone: string): Contact {
+  const c = new Contact()
+  c.phone_number = phone
+  return c
+}
+
+async function createRequest(username: string, neighb: string, priceRange: string): Promise<Request> {
+  const repo = await getRepository(Request)
+
   const request = new Request()
-  request.owner = user
+  request.owner = await getUser(username)
   request.n_people = 2
-  request.fulfilled = false
-  request.location = "100 S King St, Seattle, WA, 98199"
   request.start_window = new Date()
   request.end_window = new Date()
-  request.notes = "hey these are some notes for you"
-  return request
+  request.end_window.setHours(request.end_window.getHours() + 4);
+  request.notes = "extra meat please"
+  
+  request.neighborhood = await getNeighb(neighb)
+  request.price_range = await getPriceRange(priceRange)
+  request.contacts = [createContact('+12066602445'), createContact('+12069102789')]
+
+  return await repo.save(request)
 }
 
 export async function seed() {
-  const userRepo = await getRepository(User)
-  try {
-    await userRepo.save(createUser('alexodle'))
-    await userRepo.save(createUser('karaodle'))
-    await userRepo.save(createUser('rooneyodle'))
-    await userRepo.save(createUser('birdieodle'))
-  } catch {}
-
-  const requestRepo = await getRepository(Request)
-  try {
-    await requestRepo.save(await createRequest('alexodle'))
-    await requestRepo.save(await createRequest('alexodle'))
-    await requestRepo.save(await createRequest('karaodle'))
-  } catch {}
-
+  await createRequest('alexodle', 'Ballard', '$')
+  await createRequest('karaodle', 'Fremont', '$$')
+  await createRequest('rooneyodle', 'Ballard', '$$$')
 }

@@ -1,5 +1,5 @@
 import {Entity, Column, PrimaryGeneratedColumn, OneToMany} from "typeorm"
-import {Request} from "./Request";
+import {Request} from "./";
 
 @Entity()
 export class User {
@@ -7,11 +7,11 @@ export class User {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column()
-    display_name!: string;
-
     @Column({unique: true})
     username!: string;
+
+    @Column()
+    display_name!: string;
 
     @Column({select: false})
     password_hash!: string;

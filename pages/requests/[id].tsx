@@ -2,16 +2,18 @@ import { NextPageContext } from 'next'
 import { RequestResponse } from '../api/requests/[id]'
 import Layout from '../../components/Layout'
 import fetchJSON from '../../common/fetch'
-import { Request } from '../../db/entities/Request'
+import RequestView from '../../components/RequestView'
+import { Request } from '../../db/entities'
 
-export interface RequestProps {
+export interface RequestPageProps {
   request: Request
 }
 
-export default function RequestPage(props: RequestProps) {
+export default function RequestPage(props: RequestPageProps) {
+  const { request } = props
   return (
     <Layout>
-      <h1>Request: {props.request.id}</h1>
+      <RequestView request={request} />
       <code>
         {JSON.stringify(props.request, null, 2)}
       </code>
@@ -19,7 +21,7 @@ export default function RequestPage(props: RequestProps) {
   )
 }
 
-RequestPage.getInitialProps = async function(req: NextPageContext) {
+RequestPage.getInitialProps = async function (req: NextPageContext) {
   const res = await fetchJSON<RequestResponse>(`/api/requests/${req.query.id}`)
   return { request: res.data.request }
 }
