@@ -1,10 +1,10 @@
-import {createConnection, Connection, Repository, ObjectType, EntitySchema, getConnection as typeOrmGetConnection} from "typeorm";
+import { createConnection, Connection, Repository, ObjectType, EntitySchema, getConnection as typeOrmGetConnection, ConnectionOptions } from "typeorm";
 import * as models from "./entities";
 
 async function create(): Promise<Connection> {
   try {
     const entities = Object.values(models)
-    return await createConnection({
+    let options: ConnectionOptions = {
       type: 'postgres',
       host: process.env.POSTGRES_HOST,
       username: process.env.POSTGRES_USER,
@@ -12,7 +12,14 @@ async function create(): Promise<Connection> {
       database: process.env.POSTGRES_DATABASE,
       entities,
       synchronize: true,
-    })
+    }
+    if (process.env.NODE_ENV !== "production") {
+      options = {
+        ...options,
+        logging: true
+      }
+    }
+    return await createConnection(options)
   } catch (e) {
     console.error('DB CREATE ERROR', e.stack)
     throw e

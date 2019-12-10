@@ -1,4 +1,4 @@
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne} from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
 import { Request } from "./";
 
 @Entity()
@@ -10,6 +10,6 @@ export class Contact {
     @Column()
     phone_number!: string;
 
-    @ManyToOne('Request', {nullable: false})
+    @ManyToOne('Request', 'contacts', { nullable: false })
     request!: Request;
 }

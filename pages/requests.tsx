@@ -1,7 +1,7 @@
 import { RequestsResponse } from "./api/requests";
 import Layout from "../components/Layout";
 import Link from "next/link";
-import fetchJSON from "../common/fetch";
+import { fetchJSON } from "../common/fetch";
 import { Request } from "../db/entities/Request";
 
 interface RequestsProps {
@@ -23,7 +23,7 @@ const Requests = (props: RequestsProps) => (
   </Layout>
 )
 
-Requests.getInitialProps = async function() {
+Requests.getInitialProps = async function () {
   const res = await fetchJSON<RequestsResponse>('/api/requests')
   return { requests: res.data.requests }
 }
