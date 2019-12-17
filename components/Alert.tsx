@@ -1,6 +1,13 @@
 import { createContext, FunctionComponent, useState } from "react"
+import { makeStyles } from '@material-ui/core/styles'
 
 const DEFAULT_TIMEOUT_MS = 5000
+
+const useStyles = makeStyles({
+  root: {
+
+  }
+})
 
 interface AlertInfo {
   message: string

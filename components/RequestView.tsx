@@ -1,23 +1,15 @@
 import { Request } from '../db/entities/Request'
 import moment from 'moment'
-import { FunctionComponent, useState } from 'react'
+import { FunctionComponent } from 'react'
 import { Neighborhood } from '../db/entities'
 import { makeStyles } from '@material-ui/core/styles'
 import { CardMedia, CardContent, CardHeader } from '@material-ui/core'
 import { Card } from './Card'
 import { hoursBetween } from '../common/date_utils'
-import { RequestBuilderContext } from './new_request_form/RequestBuilderContext'
-import { DateForm } from './new_request_form/DateForm'
-import { PartySizeSelector, PriceRangeSelector, NeighborhoodSelector, NotesTextArea } from './new_request_form/DetailsForm'
-import { Form } from './forms'
-import { RequestBuilder } from './new_request_form/RequestBuilder'
 
 const useStyles = makeStyles({
-  card: {
-    maxWidth: '550px',
-  },
   media: {
-    width: '550px',
+    width: '100%',
     height: '200px',
   },
   dlgrid: {
@@ -43,7 +35,7 @@ export const RequestView: FunctionComponent<RequestViewProps> = ({ request }) =>
 
   return (
     <section className='request'>
-      <Card className={classes.card}>
+      <Card>
         <CardHeader title={`A night out in ${request.neighborhood.name}`} />
         {backgroundImage ?
           <CardMedia
