@@ -1,4 +1,11 @@
-import {Entity, Column, PrimaryGeneratedColumn} from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+
+export interface NeighborhoodImages {
+    images: {
+        type: 'fullscreen' | 'thumbnail'
+        path: string
+    }[]
+}
 
 @Entity()
 export class Neighborhood {
@@ -6,6 +13,9 @@ export class Neighborhood {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({unique: true})
+    @Column({ unique: true })
     name!: string;
+
+    @Column({ type: 'json', nullable: true })
+    images!: NeighborhoodImages;
 }

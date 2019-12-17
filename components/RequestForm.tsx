@@ -1,10 +1,9 @@
 import { useContext, useState, SyntheticEvent } from 'react'
-import EnumContext from './EnumContext'
+import { EnumContext } from './EnumContext'
 import { Form, Input, TextArea, Select, Option, Button, SubmitButton, FieldSet, DateTimePicker } from './forms'
 import { Request, Neighborhood, PriceRange, Contact } from '../db/entities'
 
 const MAX_CONTACTS = 4;
-const PHONE_PATTERN = '[0-9]{3}-[0-9]{3}-[0-9]{4}'
 
 function addHours(d: Date, h: number): Date {
   const d2 = new Date(d)
@@ -63,7 +62,7 @@ export function RequestForm(props: RequestFormProps) {
   }
 
   return (
-    <Form>
+    <Form className='request-form'>
       <FieldSet legend='Date window'>
         <DateTimePicker className='start-time-picker' label='Start Time' name='startTime' value={startTime} onChange={setStartTime} disabled={isPosting} />
         <Select label='Hours' name='hours' value={hours} onChange={e => setHours(e.target.value)} disabled={isPosting}>
@@ -74,8 +73,11 @@ export function RequestForm(props: RequestFormProps) {
           <Option value={6}>6</Option>
         </Select>
       </FieldSet>
-      <Input label='Party Size' name='n_people' value={partySize} onChange={e => setPartySize(e.target.value)} disabled={isPosting} />
-      <TextArea id='notes-input' name='notes' label='Notes' value={notes} onChange={e => setNotes(e.target.value)} disabled={isPosting} />
+      <Select label='Party Size' name='partySize' value={partySize} onChange={e => setPartySize(e.target.value)} disabled={isPosting}>
+        <Option value={2}>2</Option>
+        <Option value={3}>3</Option>
+        <Option value={4}>4</Option>
+      </Select>
       <Select id='neighborhood-select' name='neighborhood_id' label='Neighborhood' value={neighborhoodId} onChange={e => setNeighborhoodId(e.target.value)} disabled={isPosting}>
         {neighborhoods.map(n => (
           <Option key={n.id} value={n.id}>{n.name}</Option>
@@ -91,33 +93,20 @@ export function RequestForm(props: RequestFormProps) {
           <Input
             key={i}
             type='tel'
-            pattern={PHONE_PATTERN}
-            maxLength={10}
+            label={`Phone ${i + 1}`}
+            maxLength={13}
             className='phone-number'
             name={`contact${i}`}
             value={c}
             onChange={e => updateContactAt(e.target.value, i)}
+            placeholder='123-456-7899'
             disabled={isPosting}
           />
         )}
       </FieldSet>
+      <TextArea id='notes-input' name='notes' label='Notes' value={notes} onChange={e => setNotes(e.target.value)} disabled={isPosting} />
       {props.onCancel ? <Button type='button' onClick={props.onCancel} disabled={isPosting}>Cancel</Button> : null}
-      <SubmitButton onClick={onSubmit} disabled={isPosting}>Submit</SubmitButton>
-      <style jsx global>{`
-        input, select, textarea {
-          display: block;
-          width: 40em;
-        }
-        select[name=hours], .start-time-picker {
-          display: inline-block;
-        }
-        select[name=hours] {
-          width: 10em;
-        }
-        .phone-number {
-          width: 12em;
-        }
-      `}</style>
+      <SubmitButton onClick={onSubmit} disabled={isPosting}>Save</SubmitButton>
     </Form>
   )
 }

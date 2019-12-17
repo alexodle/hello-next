@@ -1,38 +1,29 @@
-import Header from "./Header";
-import { FunctionComponent } from "react";
+import Header from './Header';
+import { Alert } from './Alert';
+import { FunctionComponent, Fragment } from "react";
+import { makeStyles } from '@material-ui/core/styles';
+import { CssBaseline } from '@material-ui/core';
 
-const Layout: FunctionComponent<{}> = ({ children }) => (
-  <div className='datenight-container'>
-    <Header />
-    {children}
-    <style jsx global>{`
-      * {
-        box-sizing: border-box;
-      }
+const useStyles = makeStyles({
+  container: {
+    width: '60em',
+    margin: 'auto',
+  }
+})
 
-      body {
-        font-family: "Arial", Helvetica, sans-serif;
-      }
-
-      .datenight-form input, .datenight-form textarea, .datenight-form select {
-        margin: 0.5em;
-        height: 2.5em;
-        padding: 1em;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-      }
-
-      .datenight-form textarea {
-        height: 6em;
-      }
-
-      button {
-        margin: 0.75em;
-        padding: 1em;
-        border-radius: 5px;
-      }
-    `}</style>
-  </div>
-);
+const Layout: FunctionComponent<{}> = ({ children }) => {
+  const classes = useStyles()
+  return (
+    <Fragment>
+      <CssBaseline />
+      <div className={classes.container}>
+        <Header />
+        <Alert>
+          {children}
+        </Alert>
+      </div>
+    </Fragment>
+  )
+}
 
 export default Layout;

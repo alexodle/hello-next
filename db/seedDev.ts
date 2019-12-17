@@ -1,13 +1,21 @@
 import { getRepository } from './connection';
 import { User } from './entities/User'
 import { Request } from './entities/Request'
-import { Neighborhood } from './entities/Neighborhood';
+import { Neighborhood, NeighborhoodImages } from './entities/Neighborhood';
 import { PriceRange } from './entities/PriceRange';
 import { Contact } from './entities/Contact';
 
+const neighbImages: { [key: string]: NeighborhoodImages } = {
+  'Ballard': {
+    images: [
+      { type: 'fullscreen', path: '/img/neighborhood/ballard_bg.png' }
+    ]
+  }
+}
+
 async function getUser(username: string): Promise<User> {
   const repo = await getRepository(User)
-  let user = await repo.findOne({username})
+  let user = await repo.findOne({ username })
   if (!user) {
     user = new User()
     user.username = username
@@ -20,7 +28,7 @@ async function getUser(username: string): Promise<User> {
 
 async function getPriceRange(name: string): Promise<PriceRange> {
   const repo = await getRepository(PriceRange)
-  let pr = await repo.findOne({name})
+  let pr = await repo.findOne({ name })
   if (!pr) {
     pr = new PriceRange()
     pr.name = name
@@ -31,10 +39,11 @@ async function getPriceRange(name: string): Promise<PriceRange> {
 
 async function getNeighb(name: string): Promise<Neighborhood> {
   const repo = await getRepository(Neighborhood)
-  let neighb = await repo.findOne({name})
+  let neighb = await repo.findOne({ name })
   if (!neighb) {
     neighb = new Neighborhood()
     neighb.name = name
+    neighb.images = neighbImages[name] || null
     neighb = await repo.save(neighb)
   }
   return neighb
@@ -56,7 +65,7 @@ async function createRequest(username: string, neighb: string, priceRange: strin
   request.end_window = new Date()
   request.end_window.setHours(request.end_window.getHours() + 4);
   request.notes = "extra meat please"
-  
+
   request.neighborhood = await getNeighb(neighb)
   request.price_range = await getPriceRange(priceRange)
   request.contacts = [createContact('+12066602445'), createContact('+12069102789')]

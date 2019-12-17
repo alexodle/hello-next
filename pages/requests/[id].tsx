@@ -1,15 +1,15 @@
-import { NextPageContext } from 'next'
-import { RequestResponse } from '../api/requests/[id]'
-import Layout from '../../components/Layout'
-import { fetchJSON, postJSON, putJSON } from '../../common/fetch'
-import RequestView from '../../components/RequestView'
+import { putJSON, fetchJSON } from '../../common/fetch'
+import { RequestView } from '../../components/RequestView'
 import { Request } from '../../db/entities'
-import { useState } from 'react'
-import { RequestForm } from '../../components/RequestForm'
+import { useState, useContext } from 'react'
 import { Button } from '../../components/forms'
 import { EnumsResponse } from '../api/enums'
-import EnumContext from '../../components/EnumContext'
-import { useRouter } from 'next/router'
+import { EnumContext } from '../../components/EnumContext'
+import { AlertContext } from '../../components/Alert'
+import { RequestResponse } from '../api/requests/[id]'
+import { NextPageContext } from 'next'
+import { RequestBuilderProvider } from '../../components/new_request_form/RequestBuilderContext'
+import { RequestBuilder } from '../../components/new_request_form/RequestBuilder'
 
 export interface RequestPageProps {
   request: Request
@@ -17,33 +17,45 @@ export interface RequestPageProps {
 }
 
 export default function RequestPage(props: RequestPageProps) {
-  const router = useRouter()
-  const { request } = props;
+  const requestProp = props.request
 
   const [isEditing, setIsEditing] = useState(false)
-  const [isPosting, setIsPosting] = useState(false)
+  const [saving, setSaving] = useState(false)
 
-  async function onUpdate(newRequest: Partial<Request>) {
-    setIsPosting(true)
+  // TODO: HACK - need to be able to update global state cache here, or force pull
+  const [request, setRequest] = useState(requestProp)
+
+  const alerter = useContext(AlertContext)
+
+  async function onSaveChanges(newRequest: Partial<Request>) {
+    setSaving(true)
     try {
-      await putJSON<Partial<Request>>(`/api/requests/${request.id}`, newRequest)
-      router.replace(router.asPath)
+      const resp = await putJSON<Partial<Request>>(`/api/requests/${request.id}`, newRequest)
+      alerter.alert('Updated', 'success')
+      setRequest(resp.data as Request)
+      setIsEditing(false)
     } catch (e) {
+      // TODO
       console.error('TODO: ' + e)
-      setIsPosting(false)
+    } finally {
+      setSaving(false)
     }
   }
+
+  const renderEditor = () => (
+    <RequestBuilderProvider initialRequest={request} onSave={onSaveChanges} saving={saving}>
+      <RequestBuilder forceExpand saveButtonText='Save changes' />
+    </RequestBuilderProvider>
+  )
 
   const { enums } = props
   return (
     <EnumContext.Provider value={enums}>
-      <Layout>
-        <Button onClick={() => setIsEditing(!isEditing)}>{isEditing ? 'Cancel' : 'Edit'}</Button>
-        {isEditing ?
-          <RequestForm request={request} onSubmit={onUpdate} isPosting={isPosting} /> :
-          <RequestView request={request} />
-        }
-      </Layout>
+      <Button onClick={() => setIsEditing(!isEditing)}>{isEditing ? 'Cancel' : 'Edit'}</Button>
+      {isEditing ?
+        renderEditor() :
+        <RequestView request={request} />
+      }
     </EnumContext.Provider>
   )
 }
