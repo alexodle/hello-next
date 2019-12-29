@@ -3,7 +3,7 @@ import { Button as MaterialButton } from '@material-ui/core'
 
 export interface ButtonProps {
   disabled?: boolean
-  onClick(ev: SyntheticEvent): void
+  onClick?(ev: SyntheticEvent): void
 }
 
 export const Button: FunctionComponent<ButtonProps> = ({ children, ...props }) => (
@@ -11,5 +11,5 @@ export const Button: FunctionComponent<ButtonProps> = ({ children, ...props }) =
 )
 
 export const SubmitButton: FunctionComponent<ButtonProps> = ({ children, ...props }) => (
-  <MaterialButton {...props} variant='contained' color='primary'>{children}</MaterialButton>
+  <MaterialButton {...props} variant='contained' color='primary' type='submit'>{children}</MaterialButton>
 )

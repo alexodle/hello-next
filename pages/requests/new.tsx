@@ -1,13 +1,21 @@
-import { EnumContext } from '../../components/EnumContext'
-import { NextPageContext, NextPage } from 'next'
-import { EnumsResponse } from '../api/enums'
-import { fetchJSON, postJSON } from '../../common/fetch'
-import { RequestBuilder } from '../../components/new_request_form/RequestBuilder'
-import { Request, Contact } from '../../db/entities'
-import { useRouter } from 'next/dist/client/router'
-import { useState } from 'react'
 import moment from 'moment'
-import { RequestBuilderProvider } from '../../components/new_request_form/RequestBuilderContext'
+import { NextPage, NextPageContext } from 'next'
+import { useRouter } from 'next/router'
+import { FunctionComponent, useContext, useState } from 'react'
+import { fetchJSON, postJSON } from '../../common/fetch'
+import { AlertContext } from '../../components/Alert'
+import { EnumContext } from '../../components/EnumContext'
+import { Button, FieldSet, SubmitButton } from '../../components/forms'
+import { DateForm } from '../../components/new_request_form/DateForm'
+import { DetailsForm } from '../../components/new_request_form/DetailsForm'
+import { RequestForm } from '../../components/new_request_form/RequestBuilderContext'
+import { Contact, Request } from '../../db/entities'
+import { EnumsResponse } from '../api/enums'
+
+const ORDER: [string, FunctionComponent][] = [
+  ['When would you like to go out?', DateForm],
+  ['Great, we just need a few more details', DetailsForm]
+]
 
 const FRIDAY = 5
 const SATURDAY = 6
@@ -28,6 +36,9 @@ export interface NewRequestPageProps {
 }
 
 const NewRequestPage: NextPage<NewRequestPageProps> = ({ enums }) => {
+  const alerter = useContext(AlertContext)
+
+  const [formIndex, setFormIndex] = useState(0)
   const [saving, setSaving] = useState(false)
 
   const router = useRouter()
@@ -35,11 +46,12 @@ const NewRequestPage: NextPage<NewRequestPageProps> = ({ enums }) => {
     setSaving(true)
     try {
       const resp = await postJSON<Partial<Request>>(`/api/requests`, request)
-      router.push(`/requests/${resp.data.id}`)
+      router.push(`/requests/${resp.data.id}?alert_message=Success!&alert_status=success`)
     } catch (e) {
-      // TODO
-      console.error('TODO: ' + e)
-    } finally {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(e)
+      }
+      alerter.alert('Unknown error occurred. Please try again.', 'error')
       setSaving(false)
     }
   }
@@ -57,11 +69,19 @@ const NewRequestPage: NextPage<NewRequestPageProps> = ({ enums }) => {
 
   return (
     <EnumContext.Provider value={enums}>
-      <RequestBuilderProvider initialRequest={initialRequest} onSave={onSave} saving={saving} showHeaders>
+      <RequestForm initialRequest={initialRequest} onSubmit={onSave} saving={saving}>
         <h2>Let us make a date for you</h2>
-        <RequestBuilder />
-      </RequestBuilderProvider>
-    </EnumContext.Provider>
+        {ORDER.slice(0, formIndex + 1).map(([legend, C], i) => (
+          <FieldSet key={i} legend={legend}>
+            <C />
+          </FieldSet>
+        ))}
+        {formIndex < ORDER.length - 1 ? <Button onClick={() => setFormIndex(formIndex + 1)} disabled={saving}>Next</Button> : null}
+        {formIndex === ORDER.length - 1 ?
+          <SubmitButton disabled={saving}>Let's make a date</SubmitButton> :
+          null}
+      </RequestForm>
+    </EnumContext.Provider >
   )
 }
 

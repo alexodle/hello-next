@@ -1,15 +1,17 @@
-import { putJSON, fetchJSON } from '../../common/fetch'
+
+import { NextPageContext } from 'next'
+import { useContext, useState } from 'react'
+import { fetchEnums, fetchRequest, updateRequest } from '../../common/api'
+import { createAuthorizer } from '../../common/auth_utils'
+import { AlertContext } from '../../components/Alert'
+import { EnumContext } from '../../components/EnumContext'
+import { Button, SubmitButton } from '../../components/forms'
+import { DateForm } from '../../components/new_request_form/DateForm'
+import { DetailsForm } from '../../components/new_request_form/DetailsForm'
+import { RequestForm } from '../../components/new_request_form/RequestBuilderContext'
 import { RequestView } from '../../components/RequestView'
 import { Request } from '../../db/entities'
-import { useState, useContext } from 'react'
-import { Button } from '../../components/forms'
 import { EnumsResponse } from '../api/enums'
-import { EnumContext } from '../../components/EnumContext'
-import { AlertContext } from '../../components/Alert'
-import { RequestResponse } from '../api/requests/[id]'
-import { NextPageContext } from 'next'
-import { RequestBuilderProvider } from '../../components/new_request_form/RequestBuilderContext'
-import { RequestBuilder } from '../../components/new_request_form/RequestBuilder'
 
 export interface RequestPageProps {
   request: Request
@@ -30,22 +32,26 @@ export default function RequestPage(props: RequestPageProps) {
   async function onSaveChanges(newRequest: Partial<Request>) {
     setSaving(true)
     try {
-      const resp = await putJSON<Partial<Request>>(`/api/requests/${request.id}`, newRequest)
+      const updatedRequest = await updateRequest(request.id, newRequest, createAuthorizer())
       alerter.alert('Updated', 'success')
-      setRequest(resp.data as Request)
+      setRequest(updatedRequest)
       setIsEditing(false)
     } catch (e) {
-      // TODO
-      console.error('TODO: ' + e)
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(e)
+      }
+      alerter.alert('Unknown error occurred. Please try again.', 'error')
     } finally {
       setSaving(false)
     }
   }
 
   const renderEditor = () => (
-    <RequestBuilderProvider initialRequest={request} onSave={onSaveChanges} saving={saving}>
-      <RequestBuilder forceExpand saveButtonText='Save changes' />
-    </RequestBuilderProvider>
+    <RequestForm initialRequest={request} onSubmit={onSaveChanges} saving={saving}>
+      <DateForm />
+      <DetailsForm />
+      <SubmitButton>Save changes</SubmitButton>
+    </RequestForm>
   )
 
   const { enums } = props
@@ -60,11 +66,10 @@ export default function RequestPage(props: RequestPageProps) {
   )
 }
 
-RequestPage.getInitialProps = async function (req: NextPageContext) {
-  const [requestResp, enumsResp] = await Promise.all([
-    fetchJSON<RequestResponse>(`/api/requests/${req.query.id}`),
-    fetchJSON<EnumsResponse>(`/api/enums`),
+RequestPage.getInitialProps = async function (ctx: NextPageContext) {
+  const [request, enums] = await Promise.all([
+    fetchRequest(ctx.query.id as string, createAuthorizer(ctx)),
+    fetchEnums(),
   ])
-
-  return { request: requestResp.data.request, enums: enumsResp.data }
+  return { request, enums }
 }

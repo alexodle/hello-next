@@ -1,5 +1,6 @@
-import { createContext, FunctionComponent, useState } from "react"
+import { createContext, FunctionComponent, useState, useEffect } from "react"
 import { makeStyles } from '@material-ui/core/styles'
+import { useRouter } from "next/router"
 
 const DEFAULT_TIMEOUT_MS = 5000
 
@@ -41,14 +42,22 @@ export interface AlertContextProps {
 }
 
 export const AlertContext = createContext<AlertContextProps>({
-  alert: (_message: string, _status: AlertStatus) => {
-    throw new Error('alert not applied')
-  }
+  alert: (_message: string, _status: AlertStatus) => { throw new Error('alert not provided') }
 })
 
 export const Alert: FunctionComponent<{}> = ({ children }) => {
+  const router = useRouter()
+
   const [alert, setAlert] = useState<AlertInfo | null>(null)
   const classes = useStyles()
+
+  useEffect(() => {
+    if (!router.query) return
+    const { alert_message, alert_status } = router.query
+    if (alert_message && alert_status) {
+      onAlert(alert_message as string, alert_status as AlertStatus)
+    }
+  }, [router.query.alert_message])
 
   function onAlert(message: string, status: AlertStatus) {
     if (alert) {

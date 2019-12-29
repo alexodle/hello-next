@@ -1,5 +1,5 @@
 import { FieldSet, Select, Option, TextArea } from '../../components/forms'
-import { useContext, FunctionComponent } from 'react'
+import { useContext, FunctionComponent, Fragment } from 'react'
 import { RequestBuilderContext } from './RequestBuilderContext'
 import { EnumContext } from '../EnumContext'
 import { Neighborhood, PriceRange } from '../../db/entities'
@@ -74,13 +74,12 @@ export const NotesTextArea: FunctionComponent<{}> = () => {
 }
 
 export const DetailsForm: FunctionComponent<DetailsFormProps> = () => {
-  const { showHeaders } = useContext(RequestBuilderContext)
   return (
-    <FieldSet legend={showHeaders ? "Great, we just need a few more details" : undefined}>
+    <Fragment>
       <PartySizeSelector />
       <NeighborhoodSelector />
       <PriceRangeSelector />
       <NotesTextArea />
-    </FieldSet >
+    </Fragment>
   )
 }

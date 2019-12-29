@@ -1,5 +1,5 @@
 import moment from 'moment'
-import { useState, useContext, FunctionComponent } from 'react'
+import { useState, useContext, FunctionComponent, Fragment } from 'react'
 import { RequestBuilderContext } from './RequestBuilderContext'
 import { FieldSet, DatePicker, TimePicker, Select, Option, EditableSuggestion, InlineInputSeparator } from '../forms';
 import { hoursBetween } from '../../common/date_utils'
@@ -10,7 +10,7 @@ export interface DateFormProps {
 export const DateForm: FunctionComponent<DateFormProps> = () => {
   const [isEditing, setIsEditing] = useState(false)
 
-  const { updateValue, showHeaders, saving, request: { start_window, end_window } } = useContext(RequestBuilderContext)
+  const { updateValue, saving, request: { start_window, end_window } } = useContext(RequestBuilderContext)
   const startDate = new Date(start_window as Date)
   const endDate = new Date(end_window as Date)
   const hours = hoursBetween(endDate, startDate).toString()
@@ -36,7 +36,7 @@ export const DateForm: FunctionComponent<DateFormProps> = () => {
 
   function renderEditor() {
     return (
-      <FieldSet>
+      <Fragment>
         <DatePicker
           name='startDate'
           value={new Date(start_window as Date)}
@@ -65,16 +65,11 @@ export const DateForm: FunctionComponent<DateFormProps> = () => {
           ))}
         </Select>
         <InlineInputSeparator>hours</InlineInputSeparator>
-      </FieldSet>
+      </Fragment>
     )
   }
 
-  return (
-    <FieldSet legend={showHeaders ? 'When would you like to go out?' : undefined}>
-      {isEditing ?
-        renderEditor() :
-        <EditableSuggestion onEdit={() => setIsEditing(true)}>{moment(startDate).calendar()} - {hours} hours</EditableSuggestion>
-      }
-    </FieldSet>
-  )
+  return isEditing ?
+    renderEditor() :
+    <EditableSuggestion onEdit={() => setIsEditing(true)}>{moment(startDate).calendar()} - {hours} hours</EditableSuggestion>
 }
